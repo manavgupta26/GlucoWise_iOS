@@ -1,5 +1,11 @@
 import SwiftUI
 import Charts
+struct Reading: Identifiable {
+    let id = UUID()
+    let title: String
+    let time: String
+    let value: String
+}
 
 struct TrackingView: View {
     @State private var selectedTab = "Blood Sugar"
@@ -34,6 +40,13 @@ struct TrackingView: View {
         @State private var selectedGraph = 0
         let graphOptions = ["Today", "Week", "Month"]
         
+        @State private var isShowingAddReadingForm = false
+        @State private var readings: [Reading] = [
+            Reading(title: "Post Dinner levels", time: "At 10:00 pm", value: "143 mg/dl"),
+            Reading(title: "Post Workout levels", time: "At 6:00 pm", value: "135 mg/dl"),
+            Reading(title: "Post Lunch levels", time: "At 3:00 pm", value: "130 mg/dl")
+        ]
+        
         var body: some View {
             VStack(alignment: .leading) {
                 TabView(selection: $selectedGraph) {
@@ -54,20 +67,42 @@ struct TrackingView: View {
                 }
                 .padding(.top, 5)
                 
-                Text("Readings")
-                    .font(.headline)
-                    .padding(.horizontal)
-                    .padding(.top)
+                HStack {
+                    Text("Readings")
+                        .font(.headline)
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                        isShowingAddReadingForm = true
+                    }) {
+                        Text("Add Reading")
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color(hex: "#6CAB9C"))
+                            .cornerRadius(8)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top)
                 
                 List {
-                    ReadingRow(title: "Post Dinner levels", time: "At 10:00 pm", value: "143 mg/dl")
-                    ReadingRow(title: "Post Workout levels", time: "At 6:00 pm", value: "135 mg/dl")
-                    ReadingRow(title: "Post Lunch levels", time: "At 3:00 pm", value: "130 mg/dl")
+                    ForEach(readings) { reading in
+                        ReadingRow(title: reading.title, time: reading.time, value: reading.value)
+                    }
                 }
                 .listStyle(PlainListStyle())
             }
+            .sheet(isPresented: $isShowingAddReadingForm) {
+                AddReadingView { newReading in
+                    readings.append(newReading)
+                }
+            }
         }
     }
+
+
     
     struct BloodSugarGraphView: View {
         let title: String

@@ -1,12 +1,42 @@
 import SwiftUI
 
 struct ContentView: View {
-   
+    @State private var selectedTab = 0
+    
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            DashboardView()
+                .tabItem {
+                    Image(systemName: "house.fill")
+                    Text("Home")
+                }
+                .tag(0)
+            
+            TrackingView()
+                .tabItem {
+                    Image(systemName: "chart.bar.fill")
+                    Text("Tracking")
+                }
+                .tag(1)
+            
+            ProfileView()
+                .tabItem {
+                    Image(systemName: "person.fill")
+                    Text("Profile")
+                }
+                .tag(2)
+        }
+        .accentColor(Color(hex: "#6CAB9C"))
+    }
+}
+
+struct DashboardView: View {
     @State private var selectedDate: Date = Date()
     private let stepsTaken: CGFloat = 7500
-        private let totalSteps: CGFloat = 10000
-        private let caloriesConsumed: CGFloat = 1800
-        private let totalCalories: CGFloat = 2500
+    private let totalSteps: CGFloat = 10000
+    private let caloriesConsumed: CGFloat = 1800
+    private let totalCalories: CGFloat = 2500
+    
     private var weekDates: [Date] {
         let calendar = Calendar.current
         let today = Date()
@@ -40,7 +70,7 @@ struct ContentView: View {
                                             .font(.headline)
                                             .foregroundColor(isFutureDate ? .gray : (isSelected ? .white : .black))
                                             .frame(width: 36, height: 36)
-                                            .background(isSelected ? Color(hex : "#6CAB9C") : Color.clear)
+                                            .background(isSelected ? Color(hex: "#6CAB9C") : Color.clear)
                                             .clipShape(Circle())
                                     }
                                 }
@@ -70,7 +100,7 @@ struct ContentView: View {
                                     Image(systemName: "arrow.down.right")
                                         .foregroundColor(.green)
                                     Text("5% since yesterday")
-                                        .foregroundColor(Color(hex : "6CAB9C"))
+                                        .foregroundColor(Color(hex: "#6CAB9C"))
                                 }
                                 .font(.subheadline)
                                 
@@ -182,32 +212,31 @@ struct ContentView: View {
                         }
                     }
                     .padding(.horizontal)
+                    
                     VStack(alignment: .leading) {
-                                            Text("Daily Summary")
-                                                .font(.headline)
-                                                .padding(.bottom, 8)
-                                            
-                                            HStack(spacing: 100) {
-                                                ProgressCircle(title: "Steps", value: stepsTaken, total: totalSteps, unit: "steps")
-                                                ProgressCircle(title: "Calories", value: caloriesConsumed, total: totalCalories, unit: "kcal")
-                                            }.frame(maxWidth: .infinity)
-                                            .padding()
-                            .background(Color.white)
-                            .cornerRadius(12)
-                            
-                            
-                                        }
+                        Text("Daily Summary")
+                            .font(.headline)
+                            .padding(.bottom, 8)
+                        
+                        HStack(spacing: 100) {
+                            ProgressCircle(title: "Steps", value: stepsTaken, total: totalSteps, unit: "steps")
+                            ProgressCircle(title: "Calories", value: caloriesConsumed, total: totalCalories, unit: "kcal")
+                        }.frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(12)
+                    }
                     .frame(maxWidth: .infinity)
-                                        .padding()
-                                        .cornerRadius(12)
-                                        .padding(.horizontal)
+                    .padding()
+                    .cornerRadius(12)
+                    .padding(.horizontal)
                     
                     Spacer()
                 }
                 .padding(.top)
             }
-            .background(Color(UIColor.systemGray6)) // Setting background to F2F2F7
-            .navigationTitle("Dashboard") // Navigation bar title
+            .background(Color(UIColor.systemGray6))
+            .navigationTitle("Dashboard")
         }
     }
     
@@ -224,11 +253,8 @@ struct ContentView: View {
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
-}
+
+
 struct ProgressCircle: View {
     var title: String
     var value: CGFloat
@@ -260,5 +286,12 @@ struct ProgressCircle: View {
                 .font(.subheadline)
                 .fontWeight(.bold)
         }
+    }
+}
+
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
     }
 }

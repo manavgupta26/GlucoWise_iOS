@@ -61,7 +61,7 @@ struct ActivitySelectionView: View {
             }
             .padding(.top)
             .background(Color(.systemBackground).edgesIgnoringSafeArea(.all))
-            .navigationBarHidden(true)
+            .navigationBarHidden(false)
             .navigationBarItems(leading: Button(action: {
                 // Navigate back to "Complete Your Profile" screen
                 presentationMode.wrappedValue.dismiss()

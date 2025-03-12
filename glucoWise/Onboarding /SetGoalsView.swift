@@ -13,11 +13,6 @@ struct GoalsSetupView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Set goals")
-                .font(.title)
-                .fontWeight(.bold)
-                .padding(.top, 20)
-            
             // Goal Items
             goalItem(
                 icon: "scalemass.fill",
@@ -53,6 +48,8 @@ struct GoalsSetupView: View {
             
             Spacer()
         }
+        .padding(.top,20)
+        .navigationTitle("Set Goals")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarItems(trailing: Button("Done") {
             dismiss()
@@ -90,13 +87,7 @@ struct GoalsSetupView: View {
             
             // Value Control
             HStack(spacing: 10) {
-                Button(action: {
-                    decrementValue(value, isDecimal: isDecimal)
-                }) {
-                    Text("−")
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundColor(.black)
-                }
+            
                 
                 TextField("", text: value)
                     .keyboardType(.decimalPad)
@@ -105,18 +96,12 @@ struct GoalsSetupView: View {
                     .frame(width: 60, height: 36)
                     .background(Color.white)
                     .cornerRadius(8)
+                    .keyboardType(.numberPad)
                     .shadow(color: .gray.opacity(0.2), radius: 2, x: 0, y: 1)
                     .onChange(of: value.wrappedValue) { newValue in
                         value.wrappedValue = filterNumericInput(newValue, isDecimal: isDecimal)
                     }
                 
-                Button(action: {
-                    incrementValue(value, isDecimal: isDecimal)
-                }) {
-                    Text("+")
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundColor(.black)
-                }
             }
             .frame(width: 100)
         }
@@ -124,30 +109,6 @@ struct GoalsSetupView: View {
         .background(Color(.systemGray6))
         .cornerRadius(16)
         .padding(.horizontal)
-    }
-    
-    private func incrementValue(_ value: Binding<String>, isDecimal: Bool) {
-        if isDecimal {
-            if let currentValue = Double(value.wrappedValue) {
-                value.wrappedValue = String(format: "%.1f", currentValue + 0.1)
-            }
-        } else {
-            if let currentValue = Int(value.wrappedValue) {
-                value.wrappedValue = "\(currentValue + 1)"
-            }
-        }
-    }
-    
-    private func decrementValue(_ value: Binding<String>, isDecimal: Bool) {
-        if isDecimal {
-            if let currentValue = Double(value.wrappedValue), currentValue > 0.1 {
-                value.wrappedValue = String(format: "%.1f", currentValue - 0.1)
-            }
-        } else {
-            if let currentValue = Int(value.wrappedValue), currentValue > 0 {
-                value.wrappedValue = "\(currentValue - 1)"
-            }
-        }
     }
     
     private func filterNumericInput(_ input: String, isDecimal: Bool) -> String {

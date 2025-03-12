@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
+   
     @State private var selectedDate: Date = Date()
     private let stepsTaken: CGFloat = 7500
         private let totalSteps: CGFloat = 10000

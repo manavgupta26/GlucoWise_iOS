@@ -115,25 +115,12 @@ struct ProfileCompletionView: View {
                 TextField("Height (cm)", text: $height)
                     .keyboardType(.numberPad)
                     .textFieldStyle(CustomTextFieldStyle())
-                    .toolbar {
-                        ToolbarItemGroup(placement: .keyboard) {
-                            Spacer()
-                            Button("Done") { hideKeyboard() }
-                                .foregroundColor(themeColor)
-                        }
-                    }
+                  
                 
                 // Weight TextField
                 TextField("Weight (kg)", text: $weight)
                     .keyboardType(.numberPad)
                     .textFieldStyle(CustomTextFieldStyle())
-                    .toolbar {
-                        ToolbarItemGroup(placement: .keyboard) {
-                            Spacer()
-                            Button("Done") { hideKeyboard() }
-                                .foregroundColor(themeColor)
-                        }
-                    }
                 
                 // Validation Error Message
                 if showValidationError {

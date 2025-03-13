@@ -300,8 +300,10 @@ struct ContentView_Previews: PreviewProvider {
 
 
 
+
 func formattedTime(from date: Date) -> String {
     let formatter = DateFormatter()
     formatter.timeStyle = .short  // Example: "8:00 AM"
     return formatter.string(from: date)
 }
+

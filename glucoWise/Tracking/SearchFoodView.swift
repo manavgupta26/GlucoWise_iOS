@@ -88,9 +88,9 @@ class FoodSearchViewModel: ObservableObject {
 
    // API Response Model
    struct NutritionixResponse: Codable {
-       let common: [FoodItem]
+       let common: [FoodItems]
    }
 
-   struct FoodItem: Codable {
+   struct FoodItems: Codable {
        let food_name: String
    }

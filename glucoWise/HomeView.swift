@@ -161,7 +161,7 @@ struct DashboardView: View {
                     
                     // Daily Tips
                     VStack(alignment: .leading) {
-                        Text("Daily Tips")
+                        Text("Tips")
                             .font(.headline)
                             .padding(.bottom, 4)
                         

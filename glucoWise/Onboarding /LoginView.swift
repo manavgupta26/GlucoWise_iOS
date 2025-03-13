@@ -4,12 +4,16 @@ struct LoginView: View {
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var isPasswordVisible: Bool = false
-    @Environment(\.presentationMode) var presentationMode  // Allows going back to previous screen
+    @State private var showAlert: Bool = false
+    @State private var alertMessage: String = ""
+    @State private var isLoggedIn: Bool = false  // Track login status
+
+    @Environment(\.presentationMode) var presentationMode
     
     private let accentColor = Color(red: 108/255, green: 171/255, blue: 157/255)
     
     var body: some View {
-        NavigationView {  // Wrap in NavigationView for navigation
+        NavigationView {
             VStack(spacing: 20) {
                 Spacer()
                     .frame(height: 60)
@@ -25,7 +29,9 @@ struct LoginView: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(10)
                     .padding(.horizontal)
-                
+                    .keyboardType(.emailAddress)
+                    .autocapitalization(.none)
+
                 // Password Field
                 HStack {
                     if isPasswordVisible {
@@ -46,7 +52,7 @@ struct LoginView: View {
                 .cornerRadius(10)
                 .padding(.horizontal)
                 
-                // Forgot Password - Now navigates to ForgetPasswordView
+                // Forgot Password
                 HStack {
                     Spacer()
                     NavigationLink(destination: ForgetPasswordView()) {
@@ -57,12 +63,10 @@ struct LoginView: View {
                 }
                 .padding(.horizontal, 30)
                 
-                Spacer() // Pushes elements to the bottom
+                Spacer()
                 
                 // Login Button
-                Button(action: {
-                    print("Login tapped")
-                }) {
+                Button(action: handleLogin) {
                     HStack {
                         Spacer()
                         Text("Login")
@@ -76,7 +80,7 @@ struct LoginView: View {
                     .padding(.horizontal)
                 }
                 
-                // Register Button - Takes user back to previous screen
+                // Register Button
                 HStack {
                     Text("Don't have an account yet?")
                         .foregroundColor(.black)
@@ -89,17 +93,34 @@ struct LoginView: View {
                     }
                 }
                 .padding(.top, 10)
-                .padding(.bottom, 0)
+                
+                // Navigation to HomeView after successful login
+                NavigationLink(destination: ContentView(), isActive: $isLoggedIn) {
+                    EmptyView()
+                }
+                
             }
             .padding()
-            .navigationBarBackButtonHidden(true) // Hides the back button
+            .navigationBarBackButtonHidden(true)
+            .alert(isPresented: $showAlert) {
+                Alert(title: Text("Login Failed"), message: Text(alertMessage), dismissButton: .default(Text("OK")))
+            }
+        }
+    }
+    
+    // ✅ Login Validation Function
+    private func handleLogin() {
+        let users = UserManager.shared.getAllUsers()
+        
+        if let _ = users.first(where: { $0.emailId == email && $0.password == password }) {
+            isLoggedIn = true  // Navigate to HomeView
+        } else {
+            alertMessage = "Invalid email or password. Please try again."
+            showAlert = true
         }
     }
 }
 
-// Preview
-struct LoginView_Previews: PreviewProvider {
-    static var previews: some View {
-        LoginView()
-    }
-}
+// Dummy Home View for Navigation after Login
+
+

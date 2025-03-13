@@ -32,10 +32,14 @@ struct ContentView: View {
 
 struct DashboardView: View {
     @State private var selectedDate: Date = Date()
-    private let stepsTaken: CGFloat = 7500
+    private var stepsTaken: CGFloat {
+        CGFloat(UserManager.shared.getStepsTaken(userId: UserId, date: selectedDate))
+    }
+
     private let totalSteps: CGFloat = 10000
-    private let caloriesConsumed: CGFloat = 1800
-    private let totalCalories: CGFloat = 2500
+    private var caloriesConsumed: CGFloat { UserManager.shared.getCaloriesConsumed(userId: UserId, date: selectedDate)
+    }
+    private let totalCalories: CGFloat = 1000
     
     private var weekDates: [Date] {
         let calendar = Calendar.current
@@ -90,35 +94,33 @@ struct DashboardView: View {
                             .font(.title2)
                             .fontWeight(.bold)
                         
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text("120 mg/dL")
-                                    .font(.largeTitle)
-                                    .fontWeight(.bold)
-                                
-                                HStack {
-                                    Image(systemName: "arrow.down.right")
-                                        .foregroundColor(.green)
-                                    Text("5% since yesterday")
-                                        .foregroundColor(Color(hex: "#6CAB9C"))
+                        if let lastReading = UserManager.shared.getReadings(for: selectedDate).last {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text("\(lastReading.value, specifier: "%.1f") mg/dL")
+                                        .font(.largeTitle)
+                                        .fontWeight(.bold)
+                                    
+                                    Text("Updated at \(formattedTime(from: lastReading.date))")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
                                 }
-                                .font(.subheadline)
-                                
-                                Text("Updated at 8:00 am")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                            }
-                            
-                            Spacer()
-                            
-                            Image(systemName: "person.fill")
-                                .resizable()
-                                .frame(width: 60, height: 60)
+                            }.padding()
+                                .frame(maxWidth: .infinity, alignment: .leading
+                                )
+                                .background(Color.white)
+                                .cornerRadius(12)
+                        } else {
+                            Text("No readings available")
+                                .font(.caption)
                                 .foregroundColor(.gray)
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .leading
+                                    )
+                                    .background(Color.white)
+                                    .cornerRadius(12)
                         }
-                        .padding()
-                        .background(Color.white)
-                        .cornerRadius(12)
+                        
                     }
                     .padding(.horizontal)
                     
@@ -150,7 +152,7 @@ struct DashboardView: View {
                                 
                                 Text("View Recipe >")
                                     .font(.caption)
-                                    .foregroundColor(.green)
+                                    .foregroundColor(Color(hex : "6CAB9C"))
                             }
                         }
                         .padding()
@@ -170,7 +172,7 @@ struct DashboardView: View {
                                 Image(systemName: "figure.walk")
                                     .resizable()
                                     .frame(width: 30, height: 30)
-                                    .foregroundColor(.green)
+                                    .foregroundColor(Color(hex: "6CAB9C"))
                                 
                                 Text("Take 10 min walk")
                                     .font(.headline)
@@ -182,7 +184,7 @@ struct DashboardView: View {
                                 
                                 Text("Log Activity >")
                                     .font(.caption)
-                                    .foregroundColor(.green)
+                                    .foregroundColor(Color(hex: "6CAB9C"))
                             }
                             .padding()
                             .background(Color.white)
@@ -192,7 +194,7 @@ struct DashboardView: View {
                                 Image(systemName: "drop.fill")
                                     .resizable()
                                     .frame(width: 30, height: 30)
-                                    .foregroundColor(.green)
+                                    .foregroundColor(Color(hex: "6CAB9C"))
                                 
                                 Text("9.5% HbA1c")
                                     .font(.headline)
@@ -204,7 +206,7 @@ struct DashboardView: View {
                                 
                                 Text("Know More >")
                                     .font(.caption)
-                                    .foregroundColor(.green)
+                                    .foregroundColor(Color(hex: "6CAB9C"))
                             }
                             .padding()
                             .background(Color.white)
@@ -269,7 +271,7 @@ struct ProgressCircle: View {
                     .frame(width: 100, height: 100)
                 Circle()
                     .trim(from: 0.0, to: value / total)
-                    .stroke(Color.green, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                    .stroke(Color(hex: "6CAB9C"), style: StrokeStyle(lineWidth: 10, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .frame(width: 100, height: 100)
                 
@@ -297,4 +299,9 @@ struct ContentView_Previews: PreviewProvider {
 }
 
 
-//hello manav randi
+
+func formattedTime(from date: Date) -> String {
+    let formatter = DateFormatter()
+    formatter.timeStyle = .short  // Example: "8:00 AM"
+    return formatter.string(from: date)
+}

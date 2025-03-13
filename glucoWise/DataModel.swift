@@ -7,7 +7,6 @@
 
 import Foundation
 
-
 struct User {
     var id: String? = UUID().uuidString
     var name: String
@@ -21,16 +20,24 @@ struct User {
     var currentBloodSugar: Double?
     var activityLevel: ActivityLevel
 }
+
 enum Gender: String {
     case male = "Male"
     case female = "Female"
     case other = "Other"
 }
+
 enum ActivityLevel: String {
     case sedentary = "Sedentary"
     case active = "Active"
     case veryActive = "Very Active"
     case moderateActive = "Moderately Active"
+}
+struct ActivityProgress {
+    var date: Date  // The specific day of the activity
+    var caloriesBurned: Double  // Total calories burned
+    var workoutMinutes: Int  // Total workout minutes
+    var totalSteps: Int  // Total steps taken
 }
 
 
@@ -41,20 +48,23 @@ struct Meal: Codable {
     var date: Date  // Date when the meal was logged
 
     // Function to calculate total nutrition for the meal
-    func totalNutrition() -> (carbs: Double, fats: Double, proteins: Double, fiber: Double, giIndex: Double) {
+    func totalNutrition() -> (calories: Double, carbs: Double, fats: Double, proteins: Double, fiber: Double, giIndex: Double) {
+        let totalCalories = foodItems.reduce(0) { $0 + $1.calories }
         let totalCarbs = foodItems.reduce(0) { $0 + $1.carbs }
         let totalFats = foodItems.reduce(0) { $0 + $1.fats }
         let totalProteins = foodItems.reduce(0) { $0 + $1.proteins }
         let totalFiber = foodItems.reduce(0) { $0 + $1.fiber }
         let avgGIIndex = foodItems.isEmpty ? 0 : foodItems.reduce(0) { $0 + $1.giIndex } / Double(foodItems.count)
 
-        return (totalCarbs, totalFats, totalProteins, totalFiber, avgGIIndex)
+        return (totalCalories, totalCarbs, totalFats, totalProteins, totalFiber, avgGIIndex)
     }
 }
+
 struct FoodItem: Codable {
     var id: String = UUID().uuidString
     var name: String
     var quantity: Double // Example: 100g, 1 cup, etc.
+    var calories: Double
     var carbs: Double
     var fats: Double
     var proteins: Double
@@ -67,6 +77,7 @@ struct FoodItem: Codable {
         return FoodItem(
             name: name,
             quantity: newQuantity,
+            calories: calories * factor,
             carbs: carbs * factor,
             fats: fats * factor,
             proteins: proteins * factor,
@@ -75,12 +86,14 @@ struct FoodItem: Codable {
         )
     }
 }
+
 struct BloodReading: Codable {
     var id: String = UUID().uuidString
     var type: BloodReadingType  // Fasting, Pre-meal, Post-meal, etc.
     var value: Double  // Blood sugar value (mg/dL)
     var date: Date  // Date when the reading was taken
 }
+
 enum BloodReadingType: String, Codable {
     case fasting = "Fasting"
     case preMeal = "Pre-Meal"
@@ -95,17 +108,31 @@ enum MealType: String, Codable {
     case dinner = "Dinner"
     case snacks = "Snacks"
 }
+var UserId: String = ""
 
 
 class UserManager {
     static let shared = UserManager()
-   
+
     var users: [User] = []
+    
     private var mealsByDate: [String: [Meal]] = [:]
     private var readingsByDate: [String: [BloodReading]] = [:]
+    private var activitiesByDate: [String: ActivityProgress] = [:]
     private init() {
-            loadDummyData()  // Load dummy data when the app starts
+        loadDummyData()  // Load dummy data when the app starts
+    }
+    func addActivity(_ activity: ActivityProgress) {
+            let dateKey = formatDate(activity.date)
+            activitiesByDate[dateKey] = activity
         }
+
+        func getActivity(for date: Date) -> ActivityProgress? {
+            let dateKey = formatDate(date)
+            return activitiesByDate[dateKey]
+        }
+
+
     func addUser(_ user: User) {
         users.append(user)
     }
@@ -113,47 +140,59 @@ class UserManager {
     func getAllUsers() -> [User] {
         return users
     }
+
     // Function to add a meal
     func addMeal(_ meal: Meal) {
-            let dateKey = formatDate(meal.date)
+        let dateKey = formatDate(meal.date)
 
-            if mealsByDate[dateKey] == nil {
-                mealsByDate[dateKey] = []
-            }
-            mealsByDate[dateKey]?.append(meal)
+        if mealsByDate[dateKey] == nil {
+            mealsByDate[dateKey] = []
         }
+        mealsByDate[dateKey]?.append(meal)
+    }
+
     // Function to get meals for a specific date
     func getMeals(for date: Date) -> [Meal] {
-            let dateKey = formatDate(date)
-            return mealsByDate[dateKey] ?? []
-        }
-    
-    
-    
+        let dateKey = formatDate(date)
+        return mealsByDate[dateKey] ?? []
+    }
+
     // Function to add a reading
-        func addBloodReading(_ reading: BloodReading) {
-            let dateKey = formatDate(reading.date)
+    func addBloodReading(_ reading: BloodReading) {
+        let dateKey = formatDate(reading.date)
 
-            if readingsByDate[dateKey] == nil {
-                readingsByDate[dateKey] = []
-            }
-            readingsByDate[dateKey]?.append(reading)
+        if readingsByDate[dateKey] == nil {
+            readingsByDate[dateKey] = []
         }
+        readingsByDate[dateKey]?.append(reading)
+    }
 
-        // Function to get readings for a specific date
-        func getReadings(for date: Date) -> [BloodReading] {
-            let dateKey = formatDate(date)
-            return readingsByDate[dateKey] ?? []
-        }
-    
-    
+    // Function to get readings for a specific date
+    func getReadings(for date: Date) -> [BloodReading] {
+        let dateKey = formatDate(date)
+        return readingsByDate[dateKey] ?? []
+    }
+
     private func formatDate(_ date: Date) -> String {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd"
-            return formatter.string(from: date)
-        }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
+    }
+   
+    func getCaloriesConsumed(userId: String, date: Date) -> Double {
+        let meals = UserManager.shared.getMeals(for: date)
+        return meals.reduce(0) { $0 + $1.totalNutrition().calories }
+    }
+    func getStepsTaken(userId: String, date: Date) -> Int {
+        // Fetch the steps count from stored data for the given date
+        return activitiesByDate[formatDate(date)]?.totalSteps ?? 0
+
+    }
+
+
     private func loadDummyData() {
            let dummyUser = User(
+               id: UUID().uuidString,
                name: "John Doe",
                emailId: "johndoe@example.com",
                password: "password123",
@@ -165,13 +204,14 @@ class UserManager {
                currentBloodSugar: 95.0,
                activityLevel: .active
            )
+           UserId = dummyUser.id!
            addUser(dummyUser)
 
            let today = Date()
-           
+
            // Dummy Food Items
-           let apple = FoodItem(name: "Apple", quantity: 100, carbs: 14, fats: 0.2, proteins: 0.3, fiber: 2.4, giIndex: 38)
-           let rice = FoodItem(name: "Rice", quantity: 150, carbs: 40, fats: 0.3, proteins: 3.5, fiber: 1.0, giIndex: 73)
+           let apple = FoodItem(name: "Apple", quantity: 100, calories: 52, carbs: 14, fats: 0.2, proteins: 0.3, fiber: 2.4, giIndex: 38)
+           let rice = FoodItem(name: "Rice", quantity: 150, calories: 195, carbs: 40, fats: 0.3, proteins: 3.5, fiber: 1.0, giIndex: 73)
 
            // Dummy Meals
            let breakfast = Meal(type: .breakfast, foodItems: [apple, rice], date: today)
@@ -182,10 +222,13 @@ class UserManager {
 
            // Dummy Blood Readings
            let fastingReading = BloodReading(type: .fasting, value: 90.0, date: today)
-           let postMealReading = BloodReading(type: .postMeal, value: 120.0, date: today)
+           let postMealReading = BloodReading(type: .postMeal, value: 125.0, date: today)
 
            addBloodReading(fastingReading)
            addBloodReading(postMealReading)
+
+           // Dummy Activity Progress
+           let dummyActivity = ActivityProgress(date: today, caloriesBurned: 300, workoutMinutes: 45, totalSteps: 8000)
+           addActivity(dummyActivity)
        }
-    
 }

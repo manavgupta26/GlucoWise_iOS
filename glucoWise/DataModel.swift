@@ -87,7 +87,7 @@ struct FoodItem: Codable {
     }
 }
 
-struct BloodReading: Codable {
+struct BloodReading: Codable, Identifiable {
     var id: String = UUID().uuidString
     var type: BloodReadingType  // Fasting, Pre-meal, Post-meal, etc.
     var value: Double  // Blood sugar value (mg/dL)
@@ -219,13 +219,22 @@ class UserManager {
 
            addMeal(breakfast)
            addMeal(lunch)
+        let calendar = Calendar.current
+      
 
+        // Set time to 10:00 AM
+        var components = calendar.dateComponents([.year, .month, .day], from: today)
+        components.hour = 10
+        components.minute = 0
+
+        
            // Dummy Blood Readings
            let fastingReading = BloodReading(type: .fasting, value: 90.0, date: today)
            let postMealReading = BloodReading(type: .postMeal, value: 125.0, date: today)
-
+            
            addBloodReading(fastingReading)
            addBloodReading(postMealReading)
+        
 
            // Dummy Activity Progress
            let dummyActivity = ActivityProgress(date: today, caloriesBurned: 300, workoutMinutes: 45, totalSteps: 8000)

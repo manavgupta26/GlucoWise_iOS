@@ -1,21 +1,20 @@
 import SwiftUI
+
 struct AddReadingView: View {
     @Environment(\.dismiss) var dismiss
     
     @State private var bloodSugarReading: String = ""
     @State private var selectedTime = Date()
-    @State private var selectedTag = "Fasting"
+    @State private var selectedTag: BloodReadingType = .fasting
     
-    let tags = ["Fasting", "Premeal", "Postmeal", "Preworkout", "Postworkout"]
-    
-    var onSave: (Reading) -> Void // Closure to send data back
+    let tags: [BloodReadingType] = [.fasting, .preMeal, .postMeal, .preWorkout, .postWorkout]
     
     var body: some View {
         NavigationView {
             Form {
                 Section(header: Text("Blood Sugar Reading")) {
                     TextField("Enter reading", text: $bloodSugarReading)
-                        .keyboardType(.numberPad)
+                        .keyboardType(.decimalPad)
                 }
                 
                 Section(header: Text("Time of Reading")) {
@@ -25,7 +24,7 @@ struct AddReadingView: View {
                 Section(header: Text("Tag")) {
                     Picker("Select Tag", selection: $selectedTag) {
                         ForEach(tags, id: \.self) { tag in
-                            Text(tag)
+                            Text(tag.rawValue)
                         }
                     }
                     .pickerStyle(MenuPickerStyle())
@@ -40,13 +39,11 @@ struct AddReadingView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
-                        let formatter = DateFormatter()
-                        formatter.timeStyle = .short
-                        let timeString = "At \(formatter.string(from: selectedTime))"
-                        
-                        let newReading = Reading(title: "\(selectedTag) levels", time: timeString, value: "\(bloodSugarReading) mg/dl")
-                        
-                        onSave(newReading) // Send new reading back
+                        if let value = Double(bloodSugarReading) {
+                            let newReading = BloodReading(type: selectedTag, value: value, date: selectedTime)
+                            
+                            UserManager.shared.addBloodReading(newReading) // Save to the data model
+                        }
                         dismiss()
                     }
                 }

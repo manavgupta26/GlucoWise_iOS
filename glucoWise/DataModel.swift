@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUICore
 
 struct User {
     var id: String? = UUID().uuidString
@@ -89,10 +90,39 @@ struct FoodItem: Codable {
 
 struct BloodReading: Codable, Identifiable {
     var id: String = UUID().uuidString
-    var type: BloodReadingType  // Fasting, Pre-meal, Post-meal, etc.
-    var value: Double  // Blood sugar value (mg/dL)
-    var date: Date  // Date when the reading was taken
+    var type: BloodReadingType
+    var value: Double
+    var date: Date
+
+    // Image name stored to load the correct image
+    var imageName: String? {
+        if value <= 120 {
+            return "GoodImage"
+        } else if value > 120 && value <= 180 {
+            return "NeutralImage"
+        } else {
+            return "BadImage"
+        }
+    }
+
+    // Computed property to return an Image based on imageName
+    var image: Image {
+        if let imageName = imageName {
+            return Image(imageName)
+        } else {
+            return Image(systemName: "questionmark.circle") // Default fallback image
+        }
+    }
+
+    // Explicit initializer
+    init(id: String = UUID().uuidString, type: BloodReadingType, value: Double, date: Date) {
+        self.id = id
+        self.type = type
+        self.value = value
+        self.date = date
+    }
 }
+
 
 enum BloodReadingType: String, Codable {
     case fasting = "Fasting"
@@ -131,7 +161,22 @@ class UserManager {
             let dateKey = formatDate(date)
             return activitiesByDate[dateKey]
         }
+    func differenceBetweenBloodSugar(for date: Date) -> Double? {
+        let calendar = Calendar.current
+        guard let yesterday = calendar.date(byAdding: .day, value: -1, to: date) else { return nil }
 
+        let yesterdayReadings = getReadings(for: yesterday)
+        let todayReadings = getReadings(for: date)
+
+        let yesterdayAverage = yesterdayReadings.isEmpty ? nil : yesterdayReadings.map { $0.value }.reduce(0, +) / Double(yesterdayReadings.count)
+        let todayAverage = todayReadings.isEmpty ? nil : todayReadings.map { $0.value }.reduce(0, +) / Double(todayReadings.count)
+
+        guard let yAvg = yesterdayAverage, let tAvg = todayAverage else {
+            return nil  // Return nil if we don't have readings for both days
+        }
+
+        return tAvg - yAvg
+    }
 
     func addUser(_ user: User) {
         users.append(user)

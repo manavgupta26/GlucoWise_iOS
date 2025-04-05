@@ -53,7 +53,6 @@ Our built-in AI engine provides smart, contextual advice to help users manage di
 
 - **SwiftUI** – Modern and intuitive UI framework  
 - **Firebase** – Auth and Firestore backend  
-- **CoreML / AI Module** – To generate health tips and meal suggestions *(currently rule-based, easily extendable with ML models)*  
-- **MVVM Architecture** – Clean, maintainable code structure
+
 
 ---
